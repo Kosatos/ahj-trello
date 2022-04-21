@@ -13,7 +13,10 @@ export default class AppSection {
     this.section.addEventListener('click', (evt) => {
       if (evt.target == this.openFormBtn || evt.target == this.closeFormBtn) {
         this.toggleForm();
-        this.addCardForm.reset();
+        if (!evt.currentTarget.classList.contains('hidden')) {
+          this.addCardForm.reset();
+          this.addCardTextarea.focus();
+        }
         return;
       }
     });

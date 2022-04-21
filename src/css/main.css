@@ -57,6 +57,7 @@ body {
   box-shadow: 0 5px 3px -3px rgb(165, 165, 165);
 
   color: rgb(110, 110, 110);
+  cursor: pointer;
 }
 
 .close-btn {
@@ -146,4 +147,16 @@ body {
 
 .hidden {
   display: none;
+}
+
+.dragged {
+  position: absolute;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.empty {
+  background-color: #cccccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
 }
