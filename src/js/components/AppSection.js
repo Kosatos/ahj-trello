@@ -11,13 +11,12 @@ export default class AppSection {
     // LISTENERS
 
     this.section.addEventListener('click', (evt) => {
-      if (evt.target == this.openFormBtn || evt.target == this.closeFormBtn) {
+      if (evt.target === this.openFormBtn || evt.target === this.closeFormBtn) {
         this.toggleForm();
         if (!evt.currentTarget.classList.contains('hidden')) {
           this.addCardForm.reset();
           this.addCardTextarea.focus();
         }
-        return;
       }
     });
 
@@ -28,14 +27,13 @@ export default class AppSection {
         this.addCard(this.addCardTextarea.value);
         evt.currentTarget.reset();
         this.toggleForm();
-        return;
       } else {
-        return alert('Empty');
+        throw new Error('Empty value');
       }
     });
   }
 
-  renderCard(value) {
+  static renderCard(value) {
     const card = document.createElement('li');
     card.classList.add('app__card');
     card.textContent = `${value}`;
@@ -58,7 +56,7 @@ export default class AppSection {
   }
 
   addCard(value) {
-    this.cardList.appendChild(this.renderCard(value));
+    this.cardList.appendChild(this.constructor.renderCard(value));
   }
 
   toggleForm() {

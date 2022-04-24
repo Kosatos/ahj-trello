@@ -3,41 +3,38 @@ export default class DnD {
     this.cardLists = [...document.querySelectorAll('.app__card-list')];
     this.draggedEl = null;
     this.ghostEl = null;
+    this.emptyEl = null;
+
     this.dragged = false;
+
+    this.pageX = 0;
+    this.pageY = 0;
 
     this.cardLists.forEach((cardList) => {
       cardList.addEventListener('mousedown', (evt) => {
-        // evt.preventDefault();
-        const target = evt.target;
-        if (!target.classList.contains('app__card')) {
+        evt.preventDefault();
+        this.draggedEl = evt.target;
+        if (!this.draggedEl.classList.contains('app__card')) {
           return;
         }
-        // this.draggedEl = evt.target;
-        // this.ghostEl = evt.target.cloneNode(true);
-        // this.ghostEl.classList.add('dragged');
-        // document.body.appendChild(this.ghostEl);
 
-        // this.ghostEl.style.width = `${evt.target.clientWidth}px`;
-        // this.ghostEl.style.height = `${evt.target.clientHeight}px`;
-        // this.ghostEl.style.left = `${
-        //   evt.pageX - this.ghostEl.offsetWidth / 2
-        // }px`;
-        // this.ghostEl.style.top = `${
-        //   evt.pageY - this.ghostEl.offsetHeight / 2
-        // }px`;
+        this.pageX = evt.pageX;
+        this.pageY = evt.pageY;
 
-        this.ghostEl = target.cloneNode(true);
+        this.ghostEl = this.draggedEl.cloneNode(true);
         this.ghostEl.classList.add('dragged');
-        this.ghostEl.style.width = `${target.getBoundingClientRect().width}px`;
+        this.ghostEl.style.width = `${
+          this.draggedEl.getBoundingClientRect().width
+        }px`;
         this.ghostEl.style.transform = 'rotate(5deg)';
         document.body.appendChild(this.ghostEl);
         this.coordsEl = {
-          x: target.getBoundingClientRect().x,
-          y: target.getBoundingClientRect().y,
+          x: this.draggedEl.getBoundingClientRect().x,
+          y: this.draggedEl.getBoundingClientRect().y,
         };
         this.size = {
-          width: target.getBoundingClientRect().width,
-          height: target.getBoundingClientRect().height,
+          width: this.draggedEl.getBoundingClientRect().width,
+          height: this.draggedEl.getBoundingClientRect().height,
         };
         this.delta = {
           x: evt.pageX - this.coordsEl.x,
@@ -46,79 +43,65 @@ export default class DnD {
 
         this.ghostEl.style.left = `${this.coordsEl.x}px`;
         this.ghostEl.style.top = `${this.coordsEl.y}px`;
+        document.body.style.cursor = 'grabbing';
 
         this.emptyEl = document.createElement('div');
         this.emptyEl.className = 'empty';
         this.emptyEl.style.width = `${this.size.width}px`;
         this.emptyEl.style.height = `${this.size.height}px`;
-        evt.target.replaceWith(this.emptyEl);
+        this.draggedEl.replaceWith(this.emptyEl);
 
         this.dragged = true;
       });
 
       document.addEventListener('mousemove', (evt) => {
+        evt.preventDefault();
         if (!this.dragged) {
           return;
         }
+
         this.ghostEl.style.left = `${evt.pageX - this.delta.x}px`;
         this.ghostEl.style.top = `${evt.pageY - this.delta.y}px`;
+        const ghostElTop = this.ghostEl.getBoundingClientRect().y;
 
         this.closestEl = document.elementFromPoint(evt.pageX, evt.pageY);
-        this.closestList = this.closestEl.closest('.app__card-list');
-        this.closestCard = this.closestEl.closest('.app__card');
-        this.closestBtn = this.closestEl.closest('app__add-card-btn');
-        this.closestForm = this.closestEl.closest('app__form');
-        if (this.closestBtn) {
-          console.log(kek);
+        const closestElTop = this.closestEl.getBoundingClientRect().y;
+
+        let closestSection;
+        if (this.closestEl.closest('.app__section')) {
+          closestSection = this.closestEl.closest('.app__section');
+          this.closestList = closestSection.querySelector('.app__card-list');
         }
 
-        if (this.closestList && this.closestCard && this.dragged) {
-          this.closestCard.insertAdjacentElement('beforebegin', this.emptyEl);
-          console.log('2');
-        } else if (this.dragged && this.closestBtn) {
+        if (this.closestEl.classList.contains('app__card')) {
+          if (ghostElTop < closestElTop) {
+            this.closestEl.insertAdjacentElement('beforebegin', this.emptyEl);
+          } else if (ghostElTop > closestElTop) {
+            this.closestEl.insertAdjacentElement('afterend', this.emptyEl);
+          }
+        } else if (this.closestList && this.closestList.children.length === 0) {
           this.closestList.appendChild(this.emptyEl);
-          console.log('3');
         }
       });
 
-      //   cardList.addEventListener('mousemove', (evt) => {
-      //     evt.preventDefault();
-      //     if (!this.draggedEl) {
-      //       return;
-      //     }
-      //     this.ghostEl.style.left = `${
-      //       evt.pageX - this.ghostEl.offsetWidth / 2
-      //     }px`;
-      //     this.ghostEl.style.top = `${
-      //       evt.pageY - this.ghostEl.offsetHeight / 2
-      //     }px`;
-      //   });
+      document.addEventListener('mouseup', (evt) => {
+        evt.preventDefault();
+        if (!this.dragged) {
+          return;
+        }
 
-      cardList.addEventListener('mouseup', (evt) => {
-        // if (!this.draggedEl) {
-        //   return;
-        // }
-        // const closest = document.elementFromPoint(evt.clientX, evt.clientY);
-        // evt.currentTarget.insertBefore(this.draggedEl, closest);
+        if (
+          (this.closestList && document.querySelector('.empty')) ||
+          (this.pageX === evt.pageX && this.pageY === evt.pageY)
+        ) {
+          document.body.removeChild(this.ghostEl);
+          this.emptyEl.replaceWith(this.draggedEl);
 
-        // this.ghostEl.remove();
-        // this.ghostEl = null;
-        // this.draggedEl = null;
-
-        cardList.addEventListener('mouseup', (evt) => {
-          if (!this.dragged) {
-            return;
-          }
-          console.log('allo');
-          if (this.closestList && this.closestCard) {
-            evt.currentTarget.insertBefore(this.ghostEl, this.closestCard);
-
-            document.body.removeChild(this.ghostEl);
-            this.ghostEl = null;
-
-            this.dragged = false;
-          }
-        });
+          this.ghostEl = null;
+          this.draggedEl = null;
+          this.dragged = false;
+        }
+        document.body.style.cursor = 'auto';
       });
     });
   }
