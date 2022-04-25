@@ -15,7 +15,7 @@ export default class State {
       },
     ];
 
-    this.appState = null;
+    this.appState = this.appStateTemplate;
     this.cardLists = [...document.querySelectorAll('.app__card-list')];
 
     this.init();
